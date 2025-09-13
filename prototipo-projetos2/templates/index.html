@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MC Sonae - Automação de Conteúdo de Projetos</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 800px; margin: 40px auto; padding: 20px; line-height: 1.6; }
+        .container { border: 1px solid #ddd; padding: 20px; border-radius: 8px; }
+        .loader { border: 4px solid #f3f3f3; border-radius: 50%; border-top: 4px solid #3498db; width: 40px; height: 40px; animation: spin 2s linear infinite; display: none; margin: 20px auto; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        #resultado { margin-top: 20px; padding: 15px; border: 1px dashed #ccc; background-color: #f9f9f9; }
+        #erro { color: red; }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>Automação de Conteúdo de Projetos - MC Sonae</h1>
+        <p>
+            Envie um relatório de projeto (.pdf, .docx, .xlsx) para gerar automaticamente
+            um resumo para comunicação interna e externa.
+        </p>
+
+        <form id="upload-form" enctype="multipart/form-data">
+            <input type="file" id="file-input" name="file" accept=".pdf,.doc,.docx,.xls,.xlsx" required>
+            <button type="submit">Gerar Resumo</button>
+        </form>
+
+        <div class="loader" id="loader"></div>
+        <div id="erro"></div>
+        <div id="resultado">
+            </div>
+    </div>
+
+    <script>
+        document.getElementById('upload-form').addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            const fileInput = document.getElementById('file-input');
+            const formData = new FormData();
+            formData.append('file', fileInput.files[0]);
+
+            const loader = document.getElementById('loader');
+            const resultadoDiv = document.getElementById('resultado');
+            const erroDiv = document.getElementById('erro');
+
+            // Limpa o estado anterior
+            resultadoDiv.innerHTML = '';
+            erroDiv.innerHTML = '';
+            loader.style.display = 'block';
+
+            try {
+                const response = await fetch('/upload', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const data = await response.json();
+
+                if (data.erro) {
+                    erroDiv.innerText = `Erro: ${data.erro}`;
+                } else {
+                    // O resultado já vem formatado em HTML pelo Gemini
+                    resultadoDiv.innerHTML = data.resultado;
+                }
+
+            } catch (error) {
+                erroDiv.innerText = `Erro de comunicação com o servidor: ${error}`;
+            } finally {
+                loader.style.display = 'none';
+            }
+        });
+    </script>
+
+</body>
+</html>
