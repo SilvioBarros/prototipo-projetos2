@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MC Sonae - Automação de Conteúdo de Projetos</title>
+<<<<<<< HEAD
     <style>
         body { font-family: Arial, sans-serif; max-width: 800px; margin: 40px auto; padding: 20px; line-height: 1.6; }
         .container { border: 1px solid #ddd; padding: 20px; border-radius: 8px; }
@@ -11,6 +12,31 @@
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         #resultado { margin-top: 20px; padding: 15px; border: 1px dashed #ccc; background-color: #f9f9f9; }
         #erro { color: red; }
+=======
+    
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol"; background-color: #f8f9fa; color: #212529; }
+        .container { max-width: 960px; margin: 40px auto; padding: 30px; background-color: #fff; border: 1px solid #dee2e6; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+        h1 { color: #0056b3; }
+        h2, h3 { color: #343a40; border-bottom: 2px solid #0056b3; padding-bottom: 5px; margin-top: 25px;}
+        .loader { border: 5px solid #f3f3f3; border-radius: 50%; border-top: 5px solid #0056b3; width: 50px; height: 50px; animation: spin 1.5s linear infinite; display: none; margin: 30px auto; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        #resultado { margin-top: 20px; padding: 20px; border: 1px solid #e9ecef; border-radius: 4px; background-color: #f8f9fa; }
+        #erro { color: #dc3545; font-weight: bold; }
+        button { background-color: #0056b3; color: white; padding: 10px 15px; border: none; border-radius: 4px; cursor: pointer; font-size: 16px; }
+        button:hover { background-color: #004494; }
+        input[type="file"] { margin-right: 10px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+        th, td { border: 1px solid #dee2e6; padding: 8px; text-align: left; }
+        th { background-color: #e9ecef; }
+        .kpi-container { display: flex; flex-wrap: wrap; gap: 20px; }
+        .kpi-card { flex: 1; min-width: 150px; background-color: #f8f9fa; border: 1px solid #dee2e6; border-radius: 8px; padding: 15px; text-align: center; }
+        .kpi-title { font-size: 14px; font-weight: bold; color: #6c757d; }
+        .kpi-value { font-size: 28px; font-weight: bold; color: #0056b3; margin: 5px 0; }
+        .kpi-description { font-size: 12px; color: #6c757d; }
+>>>>>>> 942338c (Initial commit)
     </style>
 </head>
 <body>
@@ -18,17 +44,26 @@
     <div class="container">
         <h1>Automação de Conteúdo de Projetos - MC Sonae</h1>
         <p>
+<<<<<<< HEAD
             Envie um relatório de projeto (.pdf, .docx, .xlsx) para gerar automaticamente
             um resumo para comunicação interna e externa.
+=======
+            Envie um relatório de projeto (.pdf, .docx, .xlsx) para gerar automaticamente um resumo em texto e um dashboard com os principais indicadores.
+>>>>>>> 942338c (Initial commit)
         </p>
 
         <form id="upload-form" enctype="multipart/form-data">
             <input type="file" id="file-input" name="file" accept=".pdf,.doc,.docx,.xls,.xlsx" required>
+<<<<<<< HEAD
             <button type="submit">Gerar Resumo</button>
+=======
+            <button type="submit">Gerar Análise</button>
+>>>>>>> 942338c (Initial commit)
         </form>
 
         <div class="loader" id="loader"></div>
         <div id="erro"></div>
+<<<<<<< HEAD
         <div id="resultado">
             </div>
     </div>
@@ -50,6 +85,56 @@
             erroDiv.innerHTML = '';
             loader.style.display = 'block';
 
+=======
+
+        <div id="dashboard-container" style="display: none;">
+            <h2>Dashboard do Projeto</h2>
+            <div id="kpis-container"></div>
+            <div id="graficos-container"></div>
+            <div id="tabelas-container"></div>
+        </div>
+
+        <div id="resultado-container" style="display: none;">
+             <h2>Resumo do Comunicado</h2>
+            <div id="resultado"></div>
+        </div>
+    </div>
+
+    <script>
+        // Array para guardar as instâncias dos gráficos para poder destruí-las depois
+        let chartInstances = [];
+
+        document.getElementById('upload-form').addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            const formData = new FormData();
+            formData.append('file', document.getElementById('file-input').files[0]);
+
+            // Seleciona todos os containers
+            const loader = document.getElementById('loader');
+            const erroDiv = document.getElementById('erro');
+            const resultadoContainer = document.getElementById('resultado-container');
+            const resultadoDiv = document.getElementById('resultado');
+            const dashboardContainer = document.getElementById('dashboard-container');
+            const kpisContainer = document.getElementById('kpis-container');
+            const graficosContainer = document.getElementById('graficos-container');
+            const tabelasContainer = document.getElementById('tabelas-container');
+
+            // Limpa o estado anterior
+            erroDiv.innerHTML = '';
+            resultadoDiv.innerHTML = '';
+            kpisContainer.innerHTML = '';
+            graficosContainer.innerHTML = '';
+            tabelasContainer.innerHTML = '';
+            resultadoContainer.style.display = 'none';
+            dashboardContainer.style.display = 'none';
+            loader.style.display = 'block';
+
+            // Destrói os gráficos anteriores
+            chartInstances.forEach(chart => chart.destroy());
+            chartInstances = [];
+
+>>>>>>> 942338c (Initial commit)
             try {
                 const response = await fetch('/upload', {
                     method: 'POST',
@@ -61,8 +146,84 @@
                 if (data.erro) {
                     erroDiv.innerText = `Erro: ${data.erro}`;
                 } else {
+<<<<<<< HEAD
                     // O resultado já vem formatado em HTML pelo Gemini
                     resultadoDiv.innerHTML = data.resultado;
+=======
+                    // MUDANÇA: Exibe o HTML na área de resultado
+                    if (data.html) {
+                        resultadoContainer.style.display = 'block';
+                        resultadoDiv.innerHTML = data.html;
+                    }
+
+                    // MUDANÇA: Processa os dados do dashboard
+                    if (data.dashboard) {
+                        const dashboardData = JSON.parse(data.dashboard);
+                        
+                        if (Array.isArray(dashboardData) && dashboardData.length > 0) {
+                            dashboardContainer.style.display = 'block';
+                            
+                            dashboardData.forEach((item, index) => {
+                                // Lógica para criar diferentes tipos de visualização
+                                switch (item.tipo_visualizacao_sugerida) {
+                                    case 'grafico_barras':
+                                    case 'grafico_linhas': // Adicionado para mais flexibilidade
+                                        const chartCanvas = document.createElement('canvas');
+                                        chartCanvas.id = `chart-${index}`;
+                                        graficosContainer.appendChild(chartCanvas);
+                                        
+                                        const chartType = item.tipo_visualizacao_sugerida.includes('barras') ? 'bar' : 'line';
+
+                                        const newChart = new Chart(chartCanvas.getContext('2d'), {
+                                            type: chartType,
+                                            data: {
+                                                labels: item.dados.labels,
+                                                datasets: [{
+                                                    label: item.titulo,
+                                                    data: item.dados.valores,
+                                                    backgroundColor: 'rgba(0, 86, 179, 0.6)',
+                                                    borderColor: 'rgba(0, 86, 179, 1)',
+                                                    borderWidth: 1
+                                                }]
+                                            },
+                                            options: { responsive: true, plugins: { title: { display: true, text: item.titulo }}}
+                                        });
+                                        chartInstances.push(newChart);
+                                        break;
+
+                                    case 'tabela':
+                                        let tableHTML = `<h3>${item.titulo}</h3><table><thead><tr>`;
+                                        item.dados.colunas.forEach(coluna => tableHTML += `<th>${coluna}</th>`);
+                                        tableHTML += `</tr></thead><tbody>`;
+                                        item.dados.linhas.forEach(linha => {
+                                            tableHTML += `<tr>`;
+                                            linha.forEach(celula => tableHTML += `<td>${celula}</td>`);
+                                            tableHTML += `</tr>`;
+                                        });
+                                        tableHTML += `</tbody></table>`;
+                                        tabelasContainer.innerHTML += tableHTML;
+                                        break;
+
+                                    case 'kpi':
+                                        const kpiCard = `
+                                            <div class="kpi-card">
+                                                <div class="kpi-title">${item.titulo}</div>
+                                                <div class="kpi-value">${item.valor}</div>
+                                                <div class="kpi-description">${item.descricao}</div>
+                                            </div>
+                                        `;
+                                        kpisContainer.innerHTML += kpiCard;
+                                        break;
+                                }
+                            });
+                            // Se o container de KPIs não estiver vazio, adiciona um título
+                            if (kpisContainer.innerHTML !== '') {
+                                kpisContainer.insertAdjacentHTML('afterbegin', '<h3>Indicadores-Chave</h3><div class="kpi-container">');
+                                kpisContainer.insertAdjacentHTML('beforeend', '</div>');
+                            }
+                        }
+                    }
+>>>>>>> 942338c (Initial commit)
                 }
 
             } catch (error) {

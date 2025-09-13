@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 **Comandos para usar no terminal antes de editar/executar o projeto:**
 
 # python -m venv venv <-- usado para criar um ambiente virtual
@@ -14,3 +15,6 @@
 # pip install openpyxl
 # pip install -q -U google-genai
 # pip install dotenv
+=======
+Protótipo de um projeto usando API do Gemini
+>>>>>>> 942338c (Initial commit)
