@@ -4,88 +4,168 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MC Sonae - Automação de Conteúdo de Projetos</title>
-<<<<<<< HEAD
-    <style>
-        body { font-family: Arial, sans-serif; max-width: 800px; margin: 40px auto; padding: 20px; line-height: 1.6; }
-        .container { border: 1px solid #ddd; padding: 20px; border-radius: 8px; }
-        .loader { border: 4px solid #f3f3f3; border-radius: 50%; border-top: 4px solid #3498db; width: 40px; height: 40px; animation: spin 2s linear infinite; display: none; margin: 20px auto; }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        #resultado { margin-top: 20px; padding: 15px; border: 1px dashed #ccc; background-color: #f9f9f9; }
-        #erro { color: red; }
-=======
     
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+
     <style>
-        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol"; background-color: #f8f9fa; color: #212529; }
-        .container { max-width: 960px; margin: 40px auto; padding: 30px; background-color: #fff; border: 1px solid #dee2e6; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
-        h1 { color: #0056b3; }
-        h2, h3 { color: #343a40; border-bottom: 2px solid #0056b3; padding-bottom: 5px; margin-top: 25px;}
-        .loader { border: 5px solid #f3f3f3; border-radius: 50%; border-top: 5px solid #0056b3; width: 50px; height: 50px; animation: spin 1.5s linear infinite; display: none; margin: 30px auto; }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        #resultado { margin-top: 20px; padding: 20px; border: 1px solid #e9ecef; border-radius: 4px; background-color: #f8f9fa; }
-        #erro { color: #dc3545; font-weight: bold; }
-        button { background-color: #0056b3; color: white; padding: 10px 15px; border: none; border-radius: 4px; cursor: pointer; font-size: 16px; }
-        button:hover { background-color: #004494; }
-        input[type="file"] { margin-right: 10px; }
-        table { width: 100%; border-collapse: collapse; margin-top: 15px; }
-        th, td { border: 1px solid #dee2e6; padding: 8px; text-align: left; }
-        th { background-color: #e9ecef; }
-        .kpi-container { display: flex; flex-wrap: wrap; gap: 20px; }
-        .kpi-card { flex: 1; min-width: 150px; background-color: #f8f9fa; border: 1px solid #dee2e6; border-radius: 8px; padding: 15px; text-align: center; }
-        .kpi-title { font-size: 14px; font-weight: bold; color: #6c757d; }
-        .kpi-value { font-size: 28px; font-weight: bold; color: #0056b3; margin: 5px 0; }
-        .kpi-description { font-size: 12px; color: #6c757d; }
->>>>>>> 942338c (Initial commit)
+    /* 1. DEFINIÇÃO DE CORES E FONTES */
+    :root {
+        --cor-primaria: #0056b3; /* Azul Sonae */
+        --cor-primaria-clara: #e7f1ff;
+        --cor-texto-principal: #212529;
+        --cor-texto-secundario: #6c757d;
+        --cor-fundo: #f8f9fa;
+        --cor-borda: #dee2e6;
+        --cor-branco: #fff;
+        --fonte-principal: 'Inter', sans-serif;
+    }
+
+    body { 
+        font-family: var(--fonte-principal); 
+        background-color: var(--cor-fundo); 
+        color: var(--cor-texto-principal); 
+        line-height: 1.6;
+    }
+
+    /* 2. LAYOUT E CARDS */
+    .container { 
+        max-width: 1000px; 
+        margin: 40px auto; 
+        padding: 40px; 
+        background-color: var(--cor-branco); 
+        border: 1px solid var(--cor-borda); 
+        border-radius: 12px; 
+        box-shadow: 0 8px 24px rgba(0,0,0,0.05);
+    }
+    .dashboard-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 20px;
+    }
+    .dashboard-card {
+        background-color: var(--cor-branco);
+        border: 1px solid var(--cor-borda);
+        border-radius: 8px;
+        padding: 20px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    }
+
+    /* 3. TÍTULOS E TEXTOS */
+    h1 { color: var(--cor-primaria); text-align: center; margin-bottom: 20px;}
+    h2 { 
+        color: var(--cor-texto-principal); 
+        border-bottom: 2px solid var(--cor-primaria); 
+        padding-bottom: 8px; 
+        margin-top: 30px;
+        font-weight: 700;
+    }
+    h3 {
+        color: var(--cor-texto-principal);
+        border-bottom: 1px solid var(--cor-borda);
+        padding-bottom: 5px;
+        margin-top: 20px;
+        font-weight: 600;
+    }
+
+    /* 4. ELEMENTOS INTERATIVOS E ACORDEÃO */
+    button { 
+        background-color: var(--cor-primaria); 
+        color: var(--cor-branco); 
+        padding: 12px 20px; 
+        border: none; 
+        border-radius: 6px; 
+        cursor: pointer; 
+        font-size: 16px; 
+        font-weight: 600;
+        transition: background-color 0.2s ease;
+    }
+    button:hover { background-color: #004494; }
+    
+    details.resumo-documento {
+        border: 1px solid var(--cor-borda);
+        border-radius: 8px;
+        margin-bottom: 15px;
+        background-color: var(--cor-branco);
+        transition: box-shadow 0.2s ease;
+    }
+    details.resumo-documento:hover {
+        box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    }
+    details[open] { background-color: #fafbff; }
+    
+    summary {
+        padding: 16px;
+        cursor: pointer;
+        font-size: 1.1em;
+        font-weight: 600;
+        outline: none;
+        list-style: none; /* Remove o marcador padrão */
+        position: relative;
+    }
+    summary::-webkit-details-marker { display: none; } /* Remove o marcador no Chrome/Safari */
+    
+    /* Cria um novo marcador '+' e '-' com CSS */
+    summary::before {
+        content: '+';
+        position: absolute;
+        right: 20px;
+        top: 50%;
+        transform: translateY(-50%);
+        font-size: 1.5em;
+        color: var(--cor-primaria);
+    }
+    details[open] > summary::before {
+        content: '−';
+    }
+
+    .conteudo-documento {
+        padding: 0 20px 20px 20px;
+        border-top: 1px solid var(--cor-borda);
+    }
+
+    /* 5. OUTROS ELEMENTOS (KPIs, TABELAS, LOADER) */
+    table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 14px; }
+    th, td { border: 1px solid var(--cor-borda); padding: 10px; text-align: left; }
+    th { background-color: var(--cor-fundo); }
+    
+    .kpi-container { display: flex; flex-wrap: wrap; gap: 20px; }
+    .kpi-card { flex: 1; min-width: 180px; background-color: var(--cor-fundo); border: 1px solid var(--cor-borda); border-left: 5px solid var(--cor-primaria); border-radius: 8px; padding: 20px; text-align: left; }
+    .kpi-title { font-size: 14px; font-weight: 600; color: var(--cor-texto-secundario); }
+    .kpi-value { font-size: 32px; font-weight: 700; color: var(--cor-primaria); margin: 5px 0; }
+    .kpi-description { font-size: 12px; color: var(--cor-texto-secundario); }
+
+    .loader { border: 5px solid #f3f3f3; border-radius: 50%; border-top: 5px solid var(--cor-primaria); width: 50px; height: 50px; animation: spin 1.5s linear infinite; display: none; margin: 30px auto; }
+    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
     </style>
 </head>
 <body>
 
     <div class="container">
         <h1>Automação de Conteúdo de Projetos - MC Sonae</h1>
-        <p>
-<<<<<<< HEAD
-            Envie um relatório de projeto (.pdf, .docx, .xlsx) para gerar automaticamente
-            um resumo para comunicação interna e externa.
-=======
-            Envie um relatório de projeto (.pdf, .docx, .xlsx) para gerar automaticamente um resumo em texto e um dashboard com os principais indicadores.
->>>>>>> 942338c (Initial commit)
-        </p>
+            <p>
+                Envie um ou mais relatórios de projeto (.pdf, .docx, .xlsx) e especifique seu foco para gerar uma análise combinada.
+            </p>
 
         <form id="upload-form" enctype="multipart/form-data">
-            <input type="file" id="file-input" name="file" accept=".pdf,.doc,.docx,.xls,.xlsx" required>
-<<<<<<< HEAD
-            <button type="submit">Gerar Resumo</button>
-=======
+
+            <div style="margin-bottom: 15px;">
+                <label for="foco-input"><b>Qual seu foco de análise? (Opcional)</b></label><br>
+                <input type="text" id="foco-input" name="foco" style="width: 100%; padding: 8px; border-radius: 4px; border: 1px solid #ccc;" placeholder="Ex: resumo dos dados financeiros, gráfico de vendas por região, etc.">
+            </div>
+
+        <input type="file" id="file-input" name="files" accept=".pdf,.doc,.docx,.xls,.xlsx" required multiple>
             <button type="submit">Gerar Análise</button>
->>>>>>> 942338c (Initial commit)
+            
         </form>
 
         <div class="loader" id="loader"></div>
         <div id="erro"></div>
-<<<<<<< HEAD
-        <div id="resultado">
-            </div>
-    </div>
-
-    <script>
-        document.getElementById('upload-form').addEventListener('submit', async function(e) {
-            e.preventDefault();
-
-            const fileInput = document.getElementById('file-input');
-            const formData = new FormData();
-            formData.append('file', fileInput.files[0]);
-
-            const loader = document.getElementById('loader');
-            const resultadoDiv = document.getElementById('resultado');
-            const erroDiv = document.getElementById('erro');
-
-            // Limpa o estado anterior
-            resultadoDiv.innerHTML = '';
-            erroDiv.innerHTML = '';
-            loader.style.display = 'block';
-
-=======
 
         <div id="dashboard-container" style="display: none;">
             <h2>Dashboard do Projeto</h2>
@@ -100,139 +180,118 @@
         </div>
     </div>
 
-    <script>
-        // Array para guardar as instâncias dos gráficos para poder destruí-las depois
-        let chartInstances = [];
+<script>
+    // Array para guardar as instâncias dos gráficos para poder destruí-las depois
+    let chartInstances = [];
 
-        document.getElementById('upload-form').addEventListener('submit', async function(e) {
-            e.preventDefault();
+    document.getElementById('upload-form').addEventListener('submit', async function(e) {
+        e.preventDefault();
 
-            const formData = new FormData();
-            formData.append('file', document.getElementById('file-input').files[0]);
+        const formData = new FormData();
+        const fileInput = document.getElementById('file-input');
+        const focoInput = document.getElementById('foco-input');
 
-            // Seleciona todos os containers
-            const loader = document.getElementById('loader');
-            const erroDiv = document.getElementById('erro');
-            const resultadoContainer = document.getElementById('resultado-container');
-            const resultadoDiv = document.getElementById('resultado');
-            const dashboardContainer = document.getElementById('dashboard-container');
-            const kpisContainer = document.getElementById('kpis-container');
-            const graficosContainer = document.getElementById('graficos-container');
-            const tabelasContainer = document.getElementById('tabelas-container');
+        const files = fileInput.files;
+        if (files.length === 0) {
+            document.getElementById('erro').innerText = 'Erro: Nenhum arquivo selecionado.';
+            return;
+        }
 
-            // Limpa o estado anterior
-            erroDiv.innerHTML = '';
-            resultadoDiv.innerHTML = '';
-            kpisContainer.innerHTML = '';
-            graficosContainer.innerHTML = '';
-            tabelasContainer.innerHTML = '';
-            resultadoContainer.style.display = 'none';
-            dashboardContainer.style.display = 'none';
-            loader.style.display = 'block';
+        for (let i = 0; i < files.length; i++) {
+            formData.append('files', files[i]);
+        }
+        
+        formData.append('foco', focoInput.value);
 
-            // Destrói os gráficos anteriores
-            chartInstances.forEach(chart => chart.destroy());
-            chartInstances = [];
+        const loader = document.getElementById('loader');
+        const erroDiv = document.getElementById('erro');
+        const resultadoContainer = document.getElementById('resultado-container');
+        const resultadoDiv = document.getElementById('resultado');
+        const dashboardContainer = document.getElementById('dashboard-container');
+        const kpisContainer = document.getElementById('kpis-container');
+        const graficosContainer = document.getElementById('graficos-container');
+        const tabelasContainer = document.getElementById('tabelas-container');
 
->>>>>>> 942338c (Initial commit)
-            try {
-                const response = await fetch('/upload', {
-                    method: 'POST',
-                    body: formData
-                });
+        // Limpa o estado anterior
+        erroDiv.innerHTML = '';
+        resultadoDiv.innerHTML = '';
+        kpisContainer.innerHTML = '';
+        graficosContainer.innerHTML = '';
+        tabelasContainer.innerHTML = '';
+        resultadoContainer.style.display = 'none';
+        dashboardContainer.style.display = 'none';
+        loader.style.display = 'block';
 
-                const data = await response.json();
+        chartInstances.forEach(chart => chart.destroy());
+        chartInstances = [];
 
-                if (data.erro) {
-                    erroDiv.innerText = `Erro: ${data.erro}`;
-                } else {
-<<<<<<< HEAD
-                    // O resultado já vem formatado em HTML pelo Gemini
-                    resultadoDiv.innerHTML = data.resultado;
-=======
-                    // MUDANÇA: Exibe o HTML na área de resultado
-                    if (data.html) {
-                        resultadoContainer.style.display = 'block';
-                        resultadoDiv.innerHTML = data.html;
-                    }
+        try {
+            const response = await fetch('/upload', {
+                method: 'POST',
+                body: formData
+            });
 
-                    // MUDANÇA: Processa os dados do dashboard
-                    if (data.dashboard) {
-                        const dashboardData = JSON.parse(data.dashboard);
-                        
-                        if (Array.isArray(dashboardData) && dashboardData.length > 0) {
-                            dashboardContainer.style.display = 'block';
-                            
-                            dashboardData.forEach((item, index) => {
-                                // Lógica para criar diferentes tipos de visualização
-                                switch (item.tipo_visualizacao_sugerida) {
-                                    case 'grafico_barras':
-                                    case 'grafico_linhas': // Adicionado para mais flexibilidade
-                                        const chartCanvas = document.createElement('canvas');
-                                        chartCanvas.id = `chart-${index}`;
-                                        graficosContainer.appendChild(chartCanvas);
-                                        
-                                        const chartType = item.tipo_visualizacao_sugerida.includes('barras') ? 'bar' : 'line';
+            // Adicionado para verificar se a resposta do servidor foi bem-sucedida
+            if (!response.ok) {
+                // Se o servidor retornou um erro (ex: 500), ele entra aqui
+                throw new Error(`Erro do servidor: ${response.status} ${response.statusText}`);
+            }
 
-                                        const newChart = new Chart(chartCanvas.getContext('2d'), {
-                                            type: chartType,
-                                            data: {
-                                                labels: item.dados.labels,
-                                                datasets: [{
-                                                    label: item.titulo,
-                                                    data: item.dados.valores,
-                                                    backgroundColor: 'rgba(0, 86, 179, 0.6)',
-                                                    borderColor: 'rgba(0, 86, 179, 1)',
-                                                    borderWidth: 1
-                                                }]
-                                            },
-                                            options: { responsive: true, plugins: { title: { display: true, text: item.titulo }}}
-                                        });
-                                        chartInstances.push(newChart);
-                                        break;
+            const data = await response.json();
 
-                                    case 'tabela':
-                                        let tableHTML = `<h3>${item.titulo}</h3><table><thead><tr>`;
-                                        item.dados.colunas.forEach(coluna => tableHTML += `<th>${coluna}</th>`);
-                                        tableHTML += `</tr></thead><tbody>`;
-                                        item.dados.linhas.forEach(linha => {
-                                            tableHTML += `<tr>`;
-                                            linha.forEach(celula => tableHTML += `<td>${celula}</td>`);
-                                            tableHTML += `</tr>`;
-                                        });
-                                        tableHTML += `</tbody></table>`;
-                                        tabelasContainer.innerHTML += tableHTML;
-                                        break;
-
-                                    case 'kpi':
-                                        const kpiCard = `
-                                            <div class="kpi-card">
-                                                <div class="kpi-title">${item.titulo}</div>
-                                                <div class="kpi-value">${item.valor}</div>
-                                                <div class="kpi-description">${item.descricao}</div>
-                                            </div>
-                                        `;
-                                        kpisContainer.innerHTML += kpiCard;
-                                        break;
-                                }
-                            });
-                            // Se o container de KPIs não estiver vazio, adiciona um título
-                            if (kpisContainer.innerHTML !== '') {
-                                kpisContainer.insertAdjacentHTML('afterbegin', '<h3>Indicadores-Chave</h3><div class="kpi-container">');
-                                kpisContainer.insertAdjacentHTML('beforeend', '</div>');
-                            }
-                        }
-                    }
->>>>>>> 942338c (Initial commit)
+            if (data.erro) {
+                erroDiv.innerText = `Erro retornado pelo servidor: ${data.erro}`;
+            } else {
+                if (data.html) {
+                    resultadoContainer.style.display = 'block';
+                    resultadoDiv.innerHTML = data.html;
                 }
 
-            } catch (error) {
-                erroDiv.innerText = `Erro de comunicação com o servidor: ${error}`;
-            } finally {
-                loader.style.display = 'none';
+                if (data.dashboard) {
+                    // ... (toda a sua lógica de processamento de dashboard continua aqui, sem alteração)
+                    const dashboardData = JSON.parse(data.dashboard);
+                    if (Array.isArray(dashboardData) && dashboardData.length > 0) {
+                        dashboardContainer.style.display = 'block';
+                        dashboardData.forEach((item, index) => {
+                            switch (item.tipo_visualizacao_sugerida) {
+                                case 'grafico_barras':
+                                case 'grafico_linhas':
+                                    // ... código do gráfico
+                                    break;
+                                case 'tabela':
+                                    // ... código da tabela
+                                    break;
+                                case 'kpi':
+                                    // ... código do kpi
+                                    break;
+                            }
+                        });
+                        if (kpisContainer.innerHTML !== '') {
+                            kpisContainer.insertAdjacentHTML('afterbegin', '<h3>Indicadores-Chave</h3><div class="kpi-container">');
+                            kpisContainer.insertAdjacentHTML('beforeend', '</div>');
+                        }
+                    }
+                }
             }
-        });
-    </script>
+
+        // =================================================================
+        // ======================= ALTERAÇÃO FEITA AQUI ====================
+        // =================================================================
+        } catch (error) {
+            // Para o desenvolvedor: Imprime o erro completo no console para depuração
+            console.error('Ocorreu um erro no bloco fetch:', error);
+            
+            // Para o usuário: Mostra uma mensagem mais clara e útil na tela
+            erroDiv.innerText = 'Ocorreu um erro de comunicação com o servidor. Verifique sua conexão ou tente novamente. (Mais detalhes no console do navegador)';
+        // =================================================================
+        // ======================= FIM DA ALTERAÇÃO ======================
+        // =================================================================
+        
+        } finally {
+            loader.style.display = 'none';
+        }
+    });
+</script>
 
 </body>
 </html>

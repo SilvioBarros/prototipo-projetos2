@@ -1,15 +1,33 @@
-# app.py (versão corrigida para gerar resumos e dados de dashboard)
+# app.py (versão final para múltiplos arquivos e foco combinado)
 
 # python -m venv venv <-- usado para criar um ambiente virtual
 # venv\Scripts\activate <-- Windows
 # source venv/bin/activate <-- macOS/Linux
 # python.exe -m pip install --upgrade pip <-- atualizar pip
 
+# IMPORTE NO TERMINAL TODAS AS BIBLIOTECAS NECESSÁRIAS ABAIXO:
+
+# import os
+# import traceback
+# import re
+# import json
+# from typing import Dict, Union
+# from datetime import datetime
+# import docx
+# import google.generativeai as genai
+# import pandas as pd
+# import PyPDF2
+# from flask import Flask, Response, jsonify, render_template, request
+# from werkzeug.datastructures import FileStorage
+# from dotenv import load_dotenv
+
+
+
 import os
 import traceback
 import re
 import json
-from typing import Dict, Union
+from typing import Dict, Union, List
 from datetime import datetime
 
 import docx
@@ -24,7 +42,7 @@ from dotenv import load_dotenv
 load_dotenv()
 gemini_api_key = os.getenv("GEMINI_API_KEY")
 
-# --- FUNÇÕES DE EXTRAÇÃO DE TEXTO (COM A VERSÃO CORRETA PARA EXCEL) ---
+# --- FUNÇÕES DE EXTRAÇÃO DE TEXTO (sem alterações) ---
 
 def extrair_texto_docx(caminho_arquivo: str) -> str:
     """Extrai texto de um arquivo .docx."""
@@ -82,133 +100,119 @@ UPLOAD_FOLDER = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'upload
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
-# --- LÓGICA PRINCIPAL (COM O NOVO PROMPT) ---
+# --- LÓGICA PRINCIPAL (COM O NOVO PROMPT MULTI-DOCUMENTO) ---
 
-def processar_documento(caminho_arquivo: str, extensao: str) -> Dict[str, str]:
-    """Processa o documento extraindo texto e chamando a API do Gemini com o prompt otimizado."""
+# MUDANÇA: A função agora recebe um único bloco de texto concatenado
+def processar_documento_combinado(texto_concatenado: str, foco_usuario: str) -> Dict[str, str]:
+    """Processa um bloco de texto concatenado de múltiplos documentos."""
     if not gemini_api_key:
         return {"erro": "A API Key do Gemini não está configurada. Verifique seu arquivo .env."}
 
-    extractors = {'.docx': extrair_texto_docx, '.pdf': extrair_texto_pdf, '.xlsx': extrair_texto_excel, '.xls': extrair_texto_excel}
-    extractor_func = extractors.get(extensao)
-
-    if not extractor_func:
-        return {"erro": f"Formato de arquivo '{extensao}' não é suportado."}
-
-    texto_extraido = extractor_func(caminho_arquivo)
-
-    if "ERRO:" in texto_extraido or not texto_extraido.strip():
-        return {"erro": texto_extraido or "Não foi possível extrair conteúdo do documento."}
-
-    print(f"Texto extraído com sucesso. Caracteres: {len(texto_extraido)}")
-
-    # ===================================================================================
     # ============================ INÍCIO DO NOVO PROMPT ================================
-    # ===================================================================================
     
+    instrucao_foco = ""
+    if foco_usuario:
+        instrucao_foco = f"""
+        INSTRUÇÃO PRIORITÁRIA DO USUÁRIO: O usuário forneceu um foco específico para a análise combinada: "{foco_usuario}".
+        Sua tarefa é ler TODOS os textos dos documentos fornecidos e sintetizar uma resposta única e coesa que atenda a esta solicitação. Encontre as informações relevantes em cada documento e combine-as.
+        """
+    else:
+        instrucao_foco = "INSTRUÇÃO: Como o usuário não especificou um foco, crie um resumo geral combinando os pontos principais de todos os documentos fornecidos."
+    
+# (Dentro da função processar_documento_combinado)
+
+    # ... (o código para criar a instrucao_foco continua o mesmo) ...
+
     current_date = datetime.now().strftime("%d de %B de %Y")
     prompt = f"""
-    Você é um avançado assistente de análise de dados e comunicação para a empresa MC Sonae. A data de hoje é {current_date}.
-    Sua tarefa é analisar o texto de um relatório de projeto e gerar dois blocos de informação distintos: um comunicado em HTML e os dados estruturados para um dashboard em formato JSON.
+    Você é um avançado e rigoroso assistente de análise de dados para a empresa MC Sonae. A data de hoje é {current_date}.
 
-    O texto bruto do relatório é:
+    --- REGRAS FUNDAMENTAIS ---
+    1.  Sua resposta deve se basear **ESTRITA E EXCLUSIVAMENTE** no conteúdo dos textos fornecidos no bloco "texto bruto dos documentos".
+    2.  É **PROIBIDO** buscar ou inferir qualquer informação externa da internet ou de seu conhecimento prévio.
+    3.  Se um documento não contiver informações suficientes para preencher uma seção (como a tabela) ou para atender ao foco do usuário, preencha a seção correspondente com a frase **"Informação Não Processada"**. Não invente ou deduza dados.
+    4.  A geração de uma tabela de dados para cada documento é **OBRIGATÓRIA**.
+
+    {instrucao_foco}
+
+    Sua tarefa principal é analisar o texto dos documentos fornecidos e gerar uma resposta consolidada, seguindo as regras acima. Os documentos estão separados por delimitadores "--- INÍCIO/FIM DO DOCUMENTO ---".
+
+    O texto bruto dos documentos é:
     ---
-    {texto_extraido}
+    {texto_concatenado}
     ---
 
-    Por favor, estruture sua resposta EXATAMENTE da seguinte forma, usando os delimitadores ### para separar os blocos, sem adicionar textos ou explicações fora deles.
+    Estruture sua resposta EXATAMENTE da seguinte forma:
 
-    ### BLOC-HTML ###
-    <div class="comunicado">
-        <h2>[Aqui vai o Título do Projeto ou Relatório]</h2>
-        <p><strong>Resumo Executivo:</strong> [Aqui vai um parágrafo curto com os pontos mais importantes e o status atual do projeto].</p>
-        <h3>Marcos Atingidos</h3>
-        <ul>
-            <li>[Descreva o Marco 1 que foi atingido]</li>
-            <li>[Descreva o Marco 2 que foi atingido]</li>
-        </ul>
-        <h3>Tabela de Dados Relevantes</h3>
-        [Se dados tabulares importantes forem encontrados, crie uma tabela HTML simples (<table><tr><th>...</th></tr><tr><td>...</td></tr></table>) aqui. Se não, escreva "<p>Não foram encontrados dados tabulares para exibição.</p>"]
-        <h3>Próximos Passos</h3>
-        <ul>
-            <li>[Descreva o próximo passo 1]</li>
-            <li>[Descreva o próximo passo 2]</li>
-        </ul>
-    </div>
-    ### FIM-BLOCO-HTML ###
+    ### BLOC-HTML-CONJUNTO ###
+    <details class="resumo-documento" open>
+        <summary>
+            <i class="fa-solid fa-file-pdf"></i> <strong>Análise do Documento:</strong> [aqui vai o nome do primeiro arquivo]
+        </summary>
+        <div class="conteudo-documento">
+            <p><strong>Resumo Executivo deste Documento:</strong> [Aqui vai um parágrafo de resumo focado APENAS neste documento e baseado estritamente nas informações contidas nele].</p>
+            
+            <h4>Marcos Atingidos / Pontos-Chave:</h4>
+            <ul>
+                <li>[Insight 1 extraído especificamente deste arquivo]</li>
+            </ul>
+
+            <h4>Tabela de Dados Extraídos:</h4>
+            [Crie OBRIGATORIAMENTE uma tabela HTML (`<table>`) aqui, resumindo os principais dados quantitativos ou pontos-chave do texto em formato de tabela. Extraia pelo menos 2-3 pontos-chave para a tabela. Se não encontrar dados suficientes, a tabela deve conter apenas a frase "Informação Não Processada".]
+        </div>
+    </details>
+    
+    ### FIM-BLOCO-HTML-CONJUNTO ###
 
     ### BLOC-DASHBOARD-JSON ###
     [
       {{
-        "tipo_visualizacao_sugerida": "grafico_barras",
-        "titulo": "[Título descritivo para o gráfico, ex: 'Progresso das Tarefas por Área']",
-        "dados": {{
-          "labels": ["[Categoria 1, ex: 'Desenvolvimento']", "[Categoria 2, ex: 'Testes']"],
-          "valores": ["[Valor 1, ex: 80]", "[Valor 2, ex: 60]"]
-        }}
-      }},
-      {{
         "tipo_visualizacao_sugerida": "tabela",
-        "titulo": "[Título descritivo para a tabela, ex: 'Status Detalhado das Entregas']",
+        "titulo": "[Título para a tabela combinada, baseado no foco e nos dados reais dos documentos]",
         "dados": {{
-          "colunas": ["ID da Tarefa", "Status", "Responsável"],
+          "colunas": ["Fonte do Documento", "Informação Chave Extraída"],
           "linhas": [
-            ["PROJ-001", "Concluído", "Ana"],
-            ["PROJ-002", "Em Andamento", "Bruno"]
+            ["[nome_do_arquivo.pdf]", "[Principal insight quantitativo ou qualitativo encontrado]"],
+            ["[nome_do_outro_arquivo.docx]", "[Principal insight quantitativo ou qualitativo encontrado]"]
           ]
         }}
-      }},
-      {{
-        "tipo_visualizacao_sugerida": "kpi",
-        "titulo": "[Título para o KPI, ex: 'Orçamento Executado']",
-        "valor": "[Valor principal, ex: '75%']",
-        "descricao": "[Breve descrição de contexto, ex: 'de um total de R$ 50.000']"
       }}
     ]
     ### FIM-BLOCO-DASHBOARD-JSON ###
     """
-    
-    # ===================================================================================
-    # ============================= FIM DO NOVO PROMPT ==================================
-    # ===================================================================================
 
+    
+    # ============================= FIM DO NOVO PROMPT ==================================
+    
     try:
-        print("Chamando a API do Gemini...")
-        
-        # --- MÉTODO CORRETO DE CHAMADA DA API ---
+        print("Chamando a API do Gemini com texto combinado...")
         genai.configure(api_key=gemini_api_key)
-        # Usamos um modelo conhecido e estável
         model = genai.GenerativeModel(model_name='gemini-2.5-flash')
         
         response = model.generate_content(prompt)
         response_text = response.text
-        print("Resposta recebida da API do Gemini.")
+        print("Resposta combinada recebida da API do Gemini.")
 
-        # Extrai o conteúdo HTML de forma segura
-        html_match = re.search(r"### BLOC-HTML ###(.*)### FIM-BLOCO-HTML ###", response_text, re.DOTALL)
+        # Linhas novas
+        html_match = re.search(r"### BLOC-HTML-CONJUNTO ###(.*)### FIM-BLOCO-HTML-CONJUNTO ###", response_text, re.DOTALL)
         html_content = html_match.group(1).strip() if html_match else ""
 
-        # Extrai o conteúdo JSON de forma segura
         json_match = re.search(r"### BLOC-DASHBOARD-JSON ###(.*)### FIM-BLOCO-DASHBOARD-JSON ###", response_text, re.DOTALL)
         json_content = json_match.group(1).strip() if json_match else "[]"
 
-        # Garante que o JSON é válido antes de retornar
         try:
             json.loads(json_content)
         except json.JSONDecodeError:
-            print("Aviso: A IA retornou um JSON inválido. Retornando uma lista vazia.")
+            print("Aviso: A IA retornou um JSON inválido.")
             json_content = "[]"
         
-        return {
-            "resultado_html": html_content,
-            "dashboard_sugestoes": json_content
-        }
+        return { "resultado_html": html_content, "dashboard_sugestoes": json_content }
 
     except Exception as e:
         print(f"ERRO CRÍTICO ao chamar a API do Gemini: {e}")
         return {"erro": f"Ocorreu um erro ao comunicar com a IA. Detalhes: {e}"}
 
-# --- ROTAS DO SITE (COM AJUSTE NO RETORNO) ---
+# --- ROTAS DO SITE (COM GRANDES MUDANÇAS NA ROTA /upload) ---
 
 @app.route('/')
 def index() -> str:
@@ -217,23 +221,47 @@ def index() -> str:
 @app.route('/upload', methods=['POST'])
 def upload_file() -> Union[Response, tuple[Response, int]]:
     try:
-        if 'file' not in request.files:
+        # MUDANÇA: Usar getlist para receber múltiplos arquivos
+        uploaded_files: List[FileStorage] = request.files.getlist('files')
+        foco_usuario = request.form.get('foco', '')
+
+        if not uploaded_files or not uploaded_files[0].filename:
             return jsonify({"erro": "Nenhum arquivo enviado."}), 400
         
-        file: FileStorage | None = request.files.get('file')
-        
-        if not file or not file.filename:
-            return jsonify({"erro": "Nenhum arquivo selecionado."}), 400
+        textos_concatenados = []
+        arquivos_processados_paths = []
 
-        filename = file.filename
-        _, extensao = os.path.splitext(filename)
-        caminho_arquivo = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+        # MUDANÇA: Loop para processar cada arquivo enviado
+        for file in uploaded_files:
+            if file and file.filename:
+                filename = file.filename
+                _, extensao = os.path.splitext(filename)
+                caminho_arquivo = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+                
+                file.save(caminho_arquivo)
+                arquivos_processados_paths.append(caminho_arquivo)
+
+                extractors = {'.docx': extrair_texto_docx, '.pdf': extrair_texto_pdf, '.xlsx': extrair_texto_excel, '.xls': extrair_texto_excel}
+                extractor_func = extractors.get(extensao.lower())
+
+                if extractor_func:
+                    texto_extraido = extractor_func(caminho_arquivo)
+                    # Adiciona o texto extraído com delimitadores claros
+                    textos_concatenados.append(f"--- INÍCIO DO DOCUMENTO: {filename} ---\n\n{texto_extraido}\n\n--- FIM DO DOCUMENTO: {filename} ---")
+                
+        # Limpa os arquivos salvos no disco após a extração
+        for path in arquivos_processados_paths:
+            os.remove(path)
+
+        if not textos_concatenados:
+             return jsonify({"erro": "Não foi possível extrair texto de nenhum dos arquivos."}), 500
+
+        # MUDANÇA: Junta todos os textos em um bloco só, separados por duas quebras de linha
+        texto_final_concatenado = "\n\n".join(textos_concatenados)
         
-        file.save(caminho_arquivo)
-        resultado = processar_documento(caminho_arquivo, extensao.lower())
-        os.remove(caminho_arquivo)
+        # MUDANÇA: Chama a função de processamento com o texto combinado
+        resultado = processar_documento_combinado(texto_final_concatenado, foco_usuario)
         
-        # Ajuste para retornar o novo formato de dados para o frontend
         if "erro" in resultado:
             return jsonify(resultado), 500
         else:
