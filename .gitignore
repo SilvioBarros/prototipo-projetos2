@@ -1,0 +1,28 @@
+# --- SEGURANÇA (O MAIS IMPORTANTE) ---
+# Nunca suba suas chaves de API ou segredos
+.env
+
+# --- AMBIENTE VIRTUAL ---
+# Pasta onde ficam instaladas as bibliotecas (muito pesada para o Git)
+venv/
+.venv/
+env/
+ENV/
+
+# --- CACHE DO PYTHON ---
+# Arquivos que o Python gera sozinho para rodar mais rápido
+__pycache__/
+*.py[cod]
+*$py.class
+
+# --- ARQUIVOS DO SISTEMA E DA IDE ---
+# Configurações do VS Code ou PyCharm
+.vscode/
+.idea/
+# Arquivos de sistema (Mac e Windows)
+.DS_Store
+Thumbs.db
+
+# --- ARQUIVOS DO SEU PROJETO ESPECÍFICO ---
+# Pasta onde os PDFs são salvos temporariamente para análise
+uploads/
