@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MC Sonae - Automação de Conteúdo de Projetos</title>
+    
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+
+    <style>
+    /* 1. DEFINIÇÃO DE CORES E FONTES */
+    :root {
+        --cor-primaria: #0056b3; /* Azul Sonae */
+        --cor-primaria-clara: #e7f1ff;
+        --cor-texto-principal: #212529;
+        --cor-texto-secundario: #6c757d;
+        --cor-fundo: #f8f9fa;
+        --cor-borda: #dee2e6;
+        --cor-branco: #fff;
+        --fonte-principal: 'Inter', sans-serif;
+    }
+
+    body { 
+        font-family: var(--fonte-principal); 
+        background-color: var(--cor-fundo); 
+        color: var(--cor-texto-principal); 
+        line-height: 1.6;
+    }
+
+    /* 2. LAYOUT E CARDS */
+    .container { 
+        max-width: 1000px; 
+        margin: 40px auto; 
+        padding: 40px; 
+        background-color: var(--cor-branco); 
+        border: 1px solid var(--cor-borda); 
+        border-radius: 12px; 
+        box-shadow: 0 8px 24px rgba(0,0,0,0.05);
+    }
+    .dashboard-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 20px;
+    }
+    .dashboard-card {
+        background-color: var(--cor-branco);
+        border: 1px solid var(--cor-borda);
+        border-radius: 8px;
+        padding: 20px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    }
+
+    /* 3. TÍTULOS E TEXTOS */
+    h1 { color: var(--cor-primaria); text-align: center; margin-bottom: 20px;}
+    h2 { 
+        color: var(--cor-texto-principal); 
+        border-bottom: 2px solid var(--cor-primaria); 
+        padding-bottom: 8px; 
+        margin-top: 30px;
+        font-weight: 700;
+    }
+    h3 {
+        color: var(--cor-texto-principal);
+        border-bottom: 1px solid var(--cor-borda);
+        padding-bottom: 5px;
+        margin-top: 20px;
+        font-weight: 600;
+    }
+
+    /* 4. ELEMENTOS INTERATIVOS E ACORDEÃO */
+    button { 
+        background-color: var(--cor-primaria); 
+        color: var(--cor-branco); 
+        padding: 12px 20px; 
+        border: none; 
+        border-radius: 6px; 
+        cursor: pointer; 
+        font-size: 16px; 
+        font-weight: 600;
+        transition: background-color 0.2s ease;
+    }
+    button:hover { background-color: #004494; }
+    
+    details.resumo-documento {
+        border: 1px solid var(--cor-borda);
+        border-radius: 8px;
+        margin-bottom: 15px;
+        background-color: var(--cor-branco);
+        transition: box-shadow 0.2s ease;
+    }
+    details.resumo-documento:hover {
+        box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    }
+    details[open] { background-color: #fafbff; }
+    
+    summary {
+        padding: 16px;
+        cursor: pointer;
+        font-size: 1.1em;
+        font-weight: 600;
+        outline: none;
+        list-style: none; /* Remove o marcador padrão */
+        position: relative;
+    }
+    summary::-webkit-details-marker { display: none; } /* Remove o marcador no Chrome/Safari */
+    
+    /* Cria um novo marcador '+' e '-' com CSS */
+    summary::before {
+        content: '+';
+        position: absolute;
+        right: 20px;
+        top: 50%;
+        transform: translateY(-50%);
+        font-size: 1.5em;
+        color: var(--cor-primaria);
+    }
+    details[open] > summary::before {
+        content: '−';
+    }
+
+    .conteudo-documento {
+        padding: 0 20px 20px 20px;
+        border-top: 1px solid var(--cor-borda);
+    }
+
+    /* 5. OUTROS ELEMENTOS (KPIs, TABELAS, LOADER) */
+    table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 14px; }
+    th, td { border: 1px solid var(--cor-borda); padding: 10px; text-align: left; }
+    th { background-color: var(--cor-fundo); }
+    
+    .kpi-container { display: flex; flex-wrap: wrap; gap: 20px; }
+    .kpi-card { flex: 1; min-width: 180px; background-color: var(--cor-fundo); border: 1px solid var(--cor-borda); border-left: 5px solid var(--cor-primaria); border-radius: 8px; padding: 20px; text-align: left; }
+    .kpi-title { font-size: 14px; font-weight: 600; color: var(--cor-texto-secundario); }
+    .kpi-value { font-size: 32px; font-weight: 700; color: var(--cor-primaria); margin: 5px 0; }
+    .kpi-description { font-size: 12px; color: var(--cor-texto-secundario); }
+
+    .loader { border: 5px solid #f3f3f3; border-radius: 50%; border-top: 5px solid var(--cor-primaria); width: 50px; height: 50px; animation: spin 1.5s linear infinite; display: none; margin: 30px auto; }
+    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>Automação de Conteúdo de Projetos - MC Sonae</h1>
+            <p>
+                Envie um ou mais relatórios de projeto (.pdf, .docx, .xlsx) e especifique seu foco para gerar uma análise combinada.
+            </p>
+
+        <form id="upload-form" enctype="multipart/form-data">
+
+            <div style="margin-bottom: 15px;">
+                <label for="foco-input"><b>Qual seu foco de análise? (Opcional)</b></label><br>
+                <input type="text" id="foco-input" name="foco" style="width: 100%; padding: 8px; border-radius: 4px; border: 1px solid #ccc;" placeholder="Ex: resumo dos dados financeiros, gráfico de vendas por região, etc.">
+            </div>
+
+        <input type="file" id="file-input" name="files" accept=".pdf,.doc,.docx,.xls,.xlsx" required multiple>
+            <button type="submit">Gerar Análise</button>
+            
+        </form>
+
+        <div class="loader" id="loader"></div>
+        <div id="erro"></div>
+
+        <div id="dashboard-container" style="display: none;">
+            <h2>Dashboard do Projeto</h2>
+            <div id="kpis-container"></div>
+            <div id="graficos-container"></div>
+            <div id="tabelas-container"></div>
+        </div>
+
+        <div id="resultado-container" style="display: none;">
+             <h2>Resumo do Comunicado</h2>
+            <div id="resultado"></div>
+        </div>
+    </div>
+
+<script>
+    let chartInstances = [];
+
+    document.getElementById('upload-form').addEventListener('submit', async function(e) {
+        e.preventDefault();
+
+        const formData = new FormData();
+        const fileInput = document.getElementById('file-input');
+        const focoInput = document.getElementById('foco-input');
+
+        const files = fileInput.files;
+        if (files.length === 0) {
+            document.getElementById('erro').innerText = 'Erro: Nenhum arquivo selecionado.';
+            return;
+        }
+
+        for (let i = 0; i < files.length; i++) {
+            formData.append('files', files[i]);
+        }
+        formData.append('foco', focoInput.value);
+
+        // --- Limpeza da Interface (código existente) ---
+        const loader = document.getElementById('loader');
+        const erroDiv = document.getElementById('erro');
+        const resultadoContainer = document.getElementById('resultado-container');
+        const resultadoDiv = document.getElementById('resultado');
+        const dashboardContainer = document.getElementById('dashboard-container');
+        erroDiv.innerHTML = '';
+        resultadoDiv.innerHTML = '';
+        dashboardContainer.innerHTML = ''; // Limpa todo o dashboard
+        resultadoContainer.style.display = 'none';
+        dashboardContainer.style.display = 'none';
+        loader.style.display = 'block';
+        chartInstances.forEach(chart => chart.destroy());
+        chartInstances = [];
+        // --- Fim da Limpeza ---
+
+        try {
+            const response = await fetch('/upload', {
+                method: 'POST',
+                body: formData
+            });
+
+            if (!response.ok) throw new Error(`Erro do servidor: ${response.status} ${response.statusText}`);
+
+            const data = await response.json();
+
+            if (data.erro) {
+                erroDiv.innerText = `Erro retornado pelo servidor: ${data.erro}`;
+            } else {
+                // Exibe o HTML dos resumos, que já vem separado pela IA
+                if (data.html) {
+                    resultadoContainer.style.display = 'block';
+                    resultadoDiv.innerHTML = data.html;
+                }
+
+                // =================================================================
+                // ================== NOVA LÓGICA DO DASHBOARD ===================
+                // =================================================================
+                if (data.dashboard) {
+                    const dashboardData = JSON.parse(data.dashboard);
+                    const filesAnalyzed = Object.keys(dashboardData); // Pega a lista de nomes de arquivos
+
+                    if (filesAnalyzed.length > 0) {
+                        dashboardContainer.style.display = 'block';
+                        // Adiciona o título geral do Dashboard
+                        dashboardContainer.innerHTML = '<h2>Dashboard de Análise</h2>';
+
+                        // Loop para cada arquivo no objeto JSON
+                        filesAnalyzed.forEach(filename => {
+                            const visualizations = dashboardData[filename]; // Pega a lista de visualizações do arquivo
+                            if (!visualizations || visualizations.length === 0) return;
+
+                            // Cria um container para o dashboard deste arquivo específico
+                            const fileDashboardSection = document.createElement('div');
+                            fileDashboardSection.className = 'dashboard-card';
+                            fileDashboardSection.innerHTML = `<h3><i class="fa-solid fa-chart-simple"></i> Dashboard: ${filename}</h3>`;
+                            
+                            const kpisContainer = document.createElement('div');
+                            const graficosContainer = document.createElement('div');
+                            const tabelasContainer = document.createElement('div');
+
+                            visualizations.forEach((item, index) => {
+                                switch (item.tipo_visualizacao_sugerida) {
+                                    case 'grafico_barras':
+                                    case 'grafico_linhas':
+                                        const chartCanvas = document.createElement('canvas');
+                                        graficosContainer.appendChild(chartCanvas);
+                                        const chartType = item.tipo_visualizacao_sugerida.includes('barras') ? 'bar' : 'line';
+                                        const valores = item.dados.valores.map(Number); // Garante que os valores são numéricos
+
+                                        const newChart = new Chart(chartCanvas.getContext('2d'), {
+                                            type: chartType,
+                                            data: {
+                                                labels: item.dados.labels,
+                                                datasets: [{
+                                                    label: item.titulo,
+                                                    data: valores,
+                                                    backgroundColor: 'rgba(0, 86, 179, 0.6)',
+                                                    borderColor: 'rgba(0, 86, 179, 1)',
+                                                    borderWidth: 1
+                                                }]
+                                            },
+                                            options: { responsive: true, plugins: { title: { display: true, text: item.titulo }}}
+                                        });
+                                        chartInstances.push(newChart);
+                                        break;
+                                    
+                                    case 'tabela':
+                                        let tableHTML = `<h4>${item.titulo}</h4><table><thead><tr>`;
+                                        item.dados.colunas.forEach(coluna => tableHTML += `<th>${coluna}</th>`);
+                                        tableHTML += `</tr></thead><tbody>`;
+                                        item.dados.linhas.forEach(linha => {
+                                            tableHTML += `<tr>`;
+                                            linha.forEach(celula => tableHTML += `<td>${celula}</td>`);
+                                            tableHTML += `</tr>`;
+                                        });
+                                        tableHTML += `</tbody></table>`;
+                                        tabelasContainer.innerHTML += tableHTML;
+                                        break;
+
+                                    case 'kpi':
+                                        const kpiCard = `<div class="kpi-card">
+                                            <div class="kpi-title">${item.titulo}</div>
+                                            <div class="kpi-value">${item.valor}</div>
+                                            <div class="kpi-description">${item.descricao}</div>
+                                        </div>`;
+                                        kpisContainer.innerHTML += kpiCard;
+                                        break;
+                                }
+                            });
+
+                            if (kpisContainer.innerHTML !== '') {
+                                const kpiWrapper = document.createElement('div');
+                                kpiWrapper.className = 'kpi-container';
+                                kpiWrapper.innerHTML = kpisContainer.innerHTML;
+                                fileDashboardSection.appendChild(kpiWrapper);
+                            }
+                            
+                            fileDashboardSection.appendChild(graficosContainer);
+                            fileDashboardSection.appendChild(tabelasContainer);
+                            dashboardContainer.appendChild(fileDashboardSection);
+                        });
+                    }
+                }
+            }
+        } catch (error) {
+            console.error('Ocorreu um erro no bloco fetch:', error);
+            erroDiv.innerText = 'Ocorreu um erro de comunicação com o servidor.';
+        } finally {
+            loader.style.display = 'none';
+        }
+    });
+</script>
+
+</body>
+</html>
